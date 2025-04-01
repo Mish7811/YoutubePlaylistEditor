@@ -1,34 +1,73 @@
+import os
+import json
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
-import json
-from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-CLIENT_SECRET_FILE = "client_secret.json"
-SCOPES = ["https://www.googleapis.com/auth/youtube.force-ssl"]
-PLAYLIST_ID = "PL3HaZwqJ7M7IAYpJWZjwFxpW8TIqV4CLn"
+load_dotenv()
 
+# Load environment variables
+CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
+SCOPES = os.getenv("GOOGLE_SCOPES", "https://www.googleapis.com/auth/youtube.force-ssl").split(",")
+PLAYLIST_ID = os.getenv("GOOGLE_PLAYLIST_ID")
+
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Allow all origins (change for security)
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all HTTP methods
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-# OAuth authentication
+# Authenticate only when needed
 def authenticate():
-    flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
-    credentials = flow.run_local_server(port=0)
+    credentials = None
+
+    # Load existing credentials if available
+    if os.path.exists("token.json"):
+        from google.oauth2.credentials import Credentials
+        credentials = Credentials.from_authorized_user_file("token.json")
+
+    # If credentials are missing or expired, re-authenticate
+    if not credentials or not credentials.valid:
+        flow = InstalledAppFlow.from_client_config(
+            {
+                "installed": {
+                    "client_id": CLIENT_ID,
+                    "client_secret": CLIENT_SECRET,
+                    "redirect_uris": [REDIRECT_URI],
+                    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                    "token_uri": "https://oauth2.googleapis.com/token",
+                }
+            },
+            SCOPES,
+        )
+        credentials = flow.run_local_server(port=0)
+
+        # Save new credentials
+        with open("token.json", "w") as token_file:
+            token_file.write(credentials.to_json())
+
     return build("youtube", "v3", credentials=credentials)
 
-youtube = authenticate()
+@app.get("/authenticate")
+def auth():
+    """Authenticate with YouTube API and store token."""
+    global youtube
+    youtube = authenticate()
+    return {"message": "YouTube API authenticated successfully"}
 
 @app.get("/playlist")
 def get_playlist():
     """Fetches all videos in the playlist"""
+    youtube = authenticate()
     request = youtube.playlistItems().list(
         part="snippet",
         playlistId=PLAYLIST_ID,
@@ -40,6 +79,7 @@ def get_playlist():
 @app.post("/add_song")
 def add_song(song_title: str):
     """Search for a song and add it to the playlist"""
+    youtube = authenticate()
     search_request = youtube.search().list(
         q=song_title,
         part="id",
@@ -70,6 +110,7 @@ def add_song(song_title: str):
 @app.delete("/clear_playlist")
 def clear_playlist():
     """Removes all but one video from the playlist"""
+    youtube = authenticate()
     request = youtube.playlistItems().list(part="id", playlistId=PLAYLIST_ID, maxResults=50)
     response = request.execute()
     items = response.get("items", [])
