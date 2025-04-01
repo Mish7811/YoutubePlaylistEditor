@@ -49,11 +49,12 @@ def authenticate():
             },
             SCOPES,
         )
-        credentials = flow.run_local_server(port=0)
+        credentials = flow.run_console()
 
         # Save new credentials
-        with open("token.json", "w") as token_file:
-            token_file.write(credentials.to_json())
+        # with open("token.json", "w") as token_file:
+        #     token_file.write(credentials.to_json())
+        os.environ["TOKEN_JSON"] = credentials.to_json()  
 
     return build("youtube", "v3", credentials=credentials)
 
