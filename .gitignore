@@ -40,3 +40,4 @@ venv/
 
 # Docker (if using)
 docker-compose.override.yml
+backend/token.json
