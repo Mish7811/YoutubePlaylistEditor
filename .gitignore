@@ -1,0 +1,42 @@
+# Global system ignores
+.DS_Store
+*.log
+*.pem
+
+# Node.js dependencies
+/node_modules
+
+# Environment files (DO NOT PUSH)
+.env*
+.env.local
+.env.development.local
+.env.production.local
+client_secret.json
+
+# Logs & debug files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Build & Output Directories
+/dist
+/build
+/.next
+/out
+
+# Python & FastAPI (if backend is Python-based)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.venv/
+venv/
+.env
+
+# Vercel & Deployment
+.vercel
+.netlify
+
+# Docker (if using)
+docker-compose.override.yml

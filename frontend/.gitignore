@@ -1,0 +1,32 @@
+# Node.js dependencies
+/node_modules
+
+# Next.js build output
+/.next
+/out
+
+# Environment files (DO NOT PUSH)
+/.env*
+.env.local
+.env.development.local
+.env.production.local
+
+# Logs & debug files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Misc system files
+.DS_Store
+*.pem
+
+# TypeScript build info
+*.tsbuildinfo
+next-env.d.ts
+
+# Vercel deployment config
+.vercel
+
+# Coverage reports (if using Jest or Cypress)
+/coverage
