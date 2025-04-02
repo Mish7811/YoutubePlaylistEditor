@@ -5,7 +5,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 // Fetch playlist
 export const fetchPlaylist = async () => {
   try {
-    const res = await axios.get(`/api/playlist`);
+    const res = await axios.get("https://youtubeplaylisteditor-production.up.railway.app/playlist");
     return res.data.items;
   } catch (error) {
     console.error("Error fetching playlist:", error);
