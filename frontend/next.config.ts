@@ -1,7 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  async rewrites() {
+    return [
+      {
+        source: "/api/playlist",
+        destination: "https://youtubeplaylisteditor-production.up.railway.app/playlist",
+      },
+    ];
+  },
 };
 
 export default nextConfig;
