@@ -5,7 +5,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 // Fetch playlist
 export const fetchPlaylist = async () => {
   try {
-    const res = await axios.get(`${API_URL}/playlist`);
+    const res = await axios.get(`/api/playlist`);
     return res.data.items;
   } catch (error) {
     console.error("Error fetching playlist:", error);
