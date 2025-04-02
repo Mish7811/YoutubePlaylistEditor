@@ -50,7 +50,7 @@ def authenticate():
             },
             SCOPES,
         )
-        credentials = flow.run_console()
+        credentials = flow.run_local_server(port=0)
 
         # Save new credentials
         # with open("token.json", "w") as token_file:
