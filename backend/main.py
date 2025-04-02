@@ -36,36 +36,26 @@ def authenticate():
     # Load stored credentials from Railway environment variable
     token_json_str = os.getenv("TOKEN_JSON")
     if token_json_str:
-        credentials = Credentials.from_authorized_user_info(json.loads(token_json_str))
+        try:
+            credentials = Credentials.from_authorized_user_info(json.loads(token_json_str))
+        except Exception as e:
+            print(f"Error loading TOKEN_JSON: {e}")
+            return None  # Fail gracefully
 
     # Refresh the token if expired
     if credentials and credentials.expired and credentials.refresh_token:
-        credentials.refresh(Request())
+        try:
+            credentials.refresh(Request())
+        except Exception as e:
+            print(f"Error refreshing token: {e}")
+            return None  # Fail gracefully
 
-    # If credentials are missing, re-authenticate manually and store the token JSON
     if not credentials or not credentials.valid:
-        flow = InstalledAppFlow.from_client_config(
-            {
-                "installed": {
-                    "client_id": os.getenv("GOOGLE_CLIENT_ID"),
-                    "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
-                    "redirect_uris": [os.getenv("GOOGLE_REDIRECT_URI")],
-                    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                    "token_uri": "https://oauth2.googleapis.com/token",
-                }
-            },
-            os.getenv("GOOGLE_SCOPES", "https://www.googleapis.com/auth/youtube.force-ssl").split(","),
-        )
-
-        # 🚀 On Railway, you should authenticate locally first and store the token manually
-        print("⚠️ Run this script locally first to generate a token.")
-        credentials = flow.run_local_server(port=8080)
-
-        # Save new credentials to Railway's environment (copy manually)
-        print("Copy this token JSON and set it as the 'TOKEN_JSON' environment variable in Railway:")
-        print(credentials.to_json())
+        print("⚠️ Missing or invalid credentials! Please update your TOKEN_JSON.")
+        return None  # Fail gracefully
 
     return build("youtube", "v3", credentials=credentials)
+
 
 @app.get("/")
 def read_root():
