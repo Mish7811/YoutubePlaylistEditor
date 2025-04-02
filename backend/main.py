@@ -52,7 +52,7 @@ def authenticate():
             },
             os.getenv("GOOGLE_SCOPES", "https://www.googleapis.com/auth/youtube.force-ssl").split(","),
         )
-        credentials = flow.run_local_server(port=8080)
+        credentials = flow.run_local_server(port=9000)
 
         # Save new token back to the environment (for temporary use)
         os.environ["TOKEN_JSON"] = credentials.to_json()
