@@ -58,6 +58,9 @@ def authenticate():
 
     return build("youtube", "v3", credentials=credentials)
 
+@app.get("/")
+def read_root():
+    return {"message": "Backend is running!"}
 
 @app.get("/authenticate")
 def auth():
