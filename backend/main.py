@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
+from google.oauth2.credentials import Credentials
 
 app = FastAPI()
 
@@ -31,33 +32,32 @@ app.add_middleware(
 def authenticate():
     credentials = None
 
-    # Load existing credentials if available
-    if os.path.exists("token.json"):
-        from google.oauth2.credentials import Credentials
-        credentials = Credentials.from_authorized_user_file("token.json")
+    # Load credentials from Railway environment variable
+    token_json_str = os.getenv("TOKEN_JSON")
+    if token_json_str:
+        credentials = Credentials.from_authorized_user_info(json.loads(token_json_str))
 
     # If credentials are missing or expired, re-authenticate
     if not credentials or not credentials.valid:
         flow = InstalledAppFlow.from_client_config(
             {
                 "installed": {
-                    "client_id": CLIENT_ID,
-                    "client_secret": CLIENT_SECRET,
-                    "redirect_uris": [REDIRECT_URI],
+                    "client_id": os.getenv("GOOGLE_CLIENT_ID"),
+                    "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
+                    "redirect_uris": [os.getenv("GOOGLE_REDIRECT_URI")],
                     "auth_uri": "https://accounts.google.com/o/oauth2/auth",
                     "token_uri": "https://oauth2.googleapis.com/token",
                 }
             },
-            SCOPES,
+            os.getenv("GOOGLE_SCOPES", "https://www.googleapis.com/auth/youtube.force-ssl").split(","),
         )
-        credentials = flow.run_local_server(port=0)
+        credentials = flow.run_console()
 
-        # Save new credentials
-        # with open("token.json", "w") as token_file:
-        #     token_file.write(credentials.to_json())
-        os.environ["TOKEN_JSON"] = credentials.to_json()  
+        # Save new token back to the environment (for temporary use)
+        os.environ["TOKEN_JSON"] = credentials.to_json()
 
     return build("youtube", "v3", credentials=credentials)
+
 
 @app.get("/authenticate")
 def auth():
