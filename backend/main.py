@@ -9,6 +9,7 @@ from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 
 app = FastAPI()
+port = int(os.environ.get("PORT", 8000))
 
 load_dotenv()
 
@@ -132,4 +133,4 @@ def clear_playlist():
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=port)
