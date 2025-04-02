@@ -33,12 +33,16 @@ app.add_middleware(
 def authenticate():
     credentials = None
 
-    # Load credentials from Railway environment variable
+    # Load stored credentials from Railway environment variable
     token_json_str = os.getenv("TOKEN_JSON")
     if token_json_str:
         credentials = Credentials.from_authorized_user_info(json.loads(token_json_str))
 
-    # If credentials are missing or expired, re-authenticate
+    # Refresh the token if expired
+    if credentials and credentials.expired and credentials.refresh_token:
+        credentials.refresh(Request())
+
+    # If credentials are missing, re-authenticate manually and store the token JSON
     if not credentials or not credentials.valid:
         flow = InstalledAppFlow.from_client_config(
             {
@@ -52,10 +56,14 @@ def authenticate():
             },
             os.getenv("GOOGLE_SCOPES", "https://www.googleapis.com/auth/youtube.force-ssl").split(","),
         )
-        credentials = flow.run_console()
 
-        # Save new token back to the environment (for temporary use)
-        os.environ["TOKEN_JSON"] = credentials.to_json()
+        # 🚀 On Railway, you should authenticate locally first and store the token manually
+        print("⚠️ Run this script locally first to generate a token.")
+        credentials = flow.run_local_server(port=8080)
+
+        # Save new credentials to Railway's environment (copy manually)
+        print("Copy this token JSON and set it as the 'TOKEN_JSON' environment variable in Railway:")
+        print(credentials.to_json())
 
     return build("youtube", "v3", credentials=credentials)
 
