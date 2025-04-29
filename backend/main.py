@@ -1,11 +1,12 @@
 import os
 import json
 import uvicorn
+import httpx
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from google.oauth2.credentials import Credentials
-from google.auth.transport.requests import Request
+from google.auth.transport.requests import Request as GoogleRequest
 from googleapiclient.discovery import build
 
 # Load .env locally (ignored on Railway but helpful during dev)
@@ -31,31 +32,44 @@ app.add_middleware(
 )
 
 def authenticate():
-    """Load credentials from Railway env and refresh if needed."""
     token_json_str = os.getenv("TOKEN_JSON")
     if not token_json_str:
-        print("❌ TOKEN_JSON environment variable not set.")
+        print("\u274c TOKEN_JSON environment variable not set.")
         return None
 
     try:
         credentials = Credentials.from_authorized_user_info(json.loads(token_json_str))
     except Exception as e:
-        print(f"❌ Failed to parse credentials: {e}")
+        print(f"\u274c Failed to parse credentials: {e}")
         return None
 
-    # Refresh token if needed
     if credentials.expired and credentials.refresh_token:
         try:
-            credentials.refresh(Request())
+            credentials.refresh(GoogleRequest())
         except Exception as e:
-            print(f"❌ Failed to refresh credentials: {e}")
+            print(f"\u274c Failed to refresh credentials: {e}")
             return None
 
     if not credentials.valid:
-        print("❌ Credentials are invalid even after refresh.")
+        print("\u274c Credentials are invalid even after refresh.")
         return None
 
     return build("youtube", "v3", credentials=credentials)
+
+# Middleware: Verify Google ID token\async def verify_google_token(request: Request):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
+
+    token = auth_header.split(" ")[1]
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"https://oauth2.googleapis.com/tokeninfo?id_token={token}")
+
+    if response.status_code != 200:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    return response.json()
 
 @app.get("/")
 def read_root():
@@ -69,11 +83,11 @@ def auth():
     return {"message": "YouTube API authenticated successfully"}
 
 @app.get("/playlist")
-def get_playlist():
+async def get_playlist(user=Depends(verify_google_token)):
     youtube = authenticate()
     if not youtube:
         raise HTTPException(status_code=401, detail="YouTube API authentication failed.")
-    
+
     request = youtube.playlistItems().list(
         part="snippet",
         playlistId=PLAYLIST_ID,
@@ -83,7 +97,7 @@ def get_playlist():
     return response
 
 @app.post("/add_song")
-def add_song(song_title: str):
+async def add_song(song_title: str, user=Depends(verify_google_token)):
     youtube = authenticate()
     if not youtube:
         raise HTTPException(status_code=401, detail="YouTube API authentication failed.")
@@ -117,11 +131,11 @@ def add_song(song_title: str):
     return {"message": f"Added {song_title} to playlist"}
 
 @app.delete("/clear_playlist")
-def clear_playlist():
+async def clear_playlist(user=Depends(verify_google_token)):
     youtube = authenticate()
     if not youtube:
         raise HTTPException(status_code=401, detail="YouTube API authentication failed.")
-    
+
     request = youtube.playlistItems().list(part="id", playlistId=PLAYLIST_ID, maxResults=50)
     response = request.execute()
     items = response.get("items", [])
