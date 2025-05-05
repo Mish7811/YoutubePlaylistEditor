@@ -38,7 +38,14 @@ def authenticate():
         return None
 
     try:
+        credentials_data = json.loads(token_json_str)
+        print("🔍 Loaded TOKEN_JSON:", credentials_data)
         credentials = Credentials.from_authorized_user_info(json.loads(token_json_str))
+
+        print("✅ creds.valid:", credentials.valid)
+        print("⏳ creds.expired:", credentials.expired)
+        print("🔁 creds.refresh_token present:", bool(credentials.refresh_token))
+
     except Exception as e:
         print(f"\u274c Failed to parse credentials: {e}")
         return None
