@@ -1,27 +1,20 @@
-// lib/signin.ts
+// lib/signin.ts or components/ui/SignInButton.tsx
 import { gapi } from 'gapi-script';
+import { useEffect } from 'react';
 
-export const initGoogleAuth = () => {
-  return new Promise<void>((resolve, reject) => {
-    gapi.load('client:auth2', () => {
-      gapi.client
-        .init({
-          clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-          scope: 'https://www.googleapis.com/auth/youtube.readonly',
-        })
-        .then(() => resolve())
-        .catch((error) => reject(error));
+const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!;
+
+export const initGoogleSignIn = () => {
+  gapi.load('auth2', () => {
+    gapi.auth2.init({
+      client_id: CLIENT_ID,
     });
   });
 };
 
-export const signInWithGoogle = async () => {
-  try {
-    const auth2 = gapi.auth2.getAuthInstance();
-    const user = await auth2.signIn();
-    const accessToken = user.getAuthResponse().access_token;
-    localStorage.setItem('access_token', accessToken); // ✅ Store access token
-  } catch (error) {
-    console.error("Google Sign-in failed", error);
-  }
+export const signIn = async () => {
+  const auth2 = gapi.auth2.getAuthInstance();
+  const googleUser = await auth2.signIn();
+  const id_token = googleUser.getAuthResponse().id_token;
+  localStorage.setItem('id_token', id_token);
 };

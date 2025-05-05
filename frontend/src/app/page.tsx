@@ -1,18 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Music4 } from "lucide-react";
 import Playlist from "@/components/Playlists";
 import AddSong from "@/components/AddSong";
 import ClearButton from "@/components/ClearButton";
+import { initGoogleSignIn, signIn } from '@/lib/auth';
 
 export default function Home() {
   const [key, setKey] = useState(0); // Key for forcing playlist refresh
 
+  useEffect(() => {
+    initGoogleSignIn();
+  }, []);
+
   // Better refresh method without page reload
   const refreshPlaylist = () => {
     setKey(prev => prev + 1);
+  };
+
+  const handleSignIn = async () => {
+    try {
+      await signIn();
+      console.log("User signed in successfully");
+    } catch (error) {
+      console.error("Error during sign-in", error);
+    }
   };
 
   return (
@@ -27,6 +41,14 @@ export default function Home() {
         </CardHeader>
         
         <CardContent className="space-y-6">
+          {/* Google Sign-In Button */}
+          <button
+            onClick={handleSignIn}
+            className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg mt-4"
+          >
+            Sign in with Google
+          </button>
+          
           {/* Add Song Section */}
           <div className="flex flex-col gap-4">
             <AddSong onAdd={refreshPlaylist} />
