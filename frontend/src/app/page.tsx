@@ -12,12 +12,14 @@ export default function Home() {
   const [key, setKey] = useState(0); // Key for forcing playlist refresh
 
   useEffect(() => {
-    initGoogleSignIn();
+    // Ensure Google Sign-In is initialized only in the client side
+    if (typeof window !== "undefined") {
+      initGoogleSignIn();
+    }
   }, []);
 
-  // Better refresh method without page reload
   const refreshPlaylist = () => {
-    setKey(prev => prev + 1);
+    setKey((prev) => prev + 1);
   };
 
   const handleSignIn = async () => {
@@ -33,13 +35,15 @@ export default function Home() {
     <main className="min-h-screen flex items-center justify-center bg-gradient-to-bl from-[#123458] to-[#030303] text-white pt-10 pb-8">
       <Card className="w-full max-w-2xl bg-black/40 rounded-4xl m-5 backdrop-blur-md border-gray-800">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-3xl font-light text-center flex items-center justify-center gap-2"
-          style={{ fontFamily: "var(--font-pacifico)" }}>
+          <CardTitle
+            className="text-3xl font-light text-center flex items-center justify-center gap-2"
+            style={{ fontFamily: "var(--font-pacifico)" }}
+          >
             <Music4 className="h-8 w-8" />
             YouTube Playlist Manager
           </CardTitle>
         </CardHeader>
-        
+
         <CardContent className="space-y-6">
           {/* Google Sign-In Button */}
           <button
@@ -48,7 +52,7 @@ export default function Home() {
           >
             Sign in with Google
           </button>
-          
+
           {/* Add Song Section */}
           <div className="flex flex-col gap-4">
             <AddSong onAdd={refreshPlaylist} />
