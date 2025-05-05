@@ -7,7 +7,7 @@ from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi import Security
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, JSONResponse
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request as GoogleRequest
 from googleapiclient.discovery import build
@@ -85,6 +85,13 @@ async def verify_google_token(
 @app.get("/")
 def read_root():
     return {"message": "Backend is running!"}
+
+@app.get("/example")
+async def example():
+    response = JSONResponse({"message": "Hello, world!"})
+    response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
+    response.headers["Cross-Origin-Embedder-Policy"] = "require-corp"
+    return response
 
 @app.get("/oauth2callback")
 async def oauth2callback(request: Request):
