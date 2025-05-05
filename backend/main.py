@@ -153,3 +153,5 @@ async def clear_playlist(user=Depends(verify_google_token)):
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=port)
+    print(json.loads(token_json_str))
+
