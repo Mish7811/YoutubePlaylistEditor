@@ -42,14 +42,25 @@ export default function Home() {
     if (gapiLoaded) {
       try {
         const { signIn } = await import('@/lib/auth');
-        await signIn();
-        console.log("User signed in successfully");
-        refreshPlaylist();
-      } catch (error) {
-        console.error("Error during sign-in", error);
+        const user = await signIn();
+        if (user) {
+          console.log("User signed in successfully");
+        } else {
+          console.log("User closed the sign-in popup.");
+          // Optional: Provide feedback to the user
+          alert("Sign-in popup was closed. Please try again.");
+        }
+      } catch (error: any) {
+        if (error.error === "popup_closed_by_user") {
+          console.log("The sign-in popup was closed by the user.");
+          alert("Sign-in process was interrupted. Please try again.");
+        } else {
+          console.error("Error during sign-in", error);
+        }
       }
     }
   };
+  
 
   const handleClearPlaylist = async () => {
     try {
