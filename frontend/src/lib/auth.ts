@@ -1,6 +1,5 @@
 // lib/signin.ts or components/ui/SignInButton.tsx
 import { gapi } from 'gapi-script';
-import { useEffect } from 'react';
 
 const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!;
 
