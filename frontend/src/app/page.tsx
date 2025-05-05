@@ -6,7 +6,7 @@ import { Music4 } from "lucide-react";
 import Playlist from "@/components/Playlists";
 import AddSong from "@/components/AddSong";
 import ClearButton from "@/components/ClearButton";
-import { fetchPlaylist, addSong, clearPlaylist } from "@/lib/api";
+import { fetchPlaylist, clearPlaylist } from "@/lib/api";
 
 export default function Home() {
   const [key, setKey] = useState(0); // Key for forcing playlist refresh
