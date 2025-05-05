@@ -7,6 +7,7 @@ from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi import Security
+from fastapi.responses import RedirectResponse
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request as GoogleRequest
 from googleapiclient.discovery import build
@@ -84,6 +85,34 @@ async def verify_google_token(
 @app.get("/")
 def read_root():
     return {"message": "Backend is running!"}
+
+@app.get("/oauth2callback")
+async def oauth2callback(request: Request):
+    code = request.query_params.get("code")
+    if not code:
+        raise HTTPException(status_code=400, detail="No code in request")
+
+    token_url = "https://oauth2.googleapis.com/token"
+    params = {
+        "code": code,
+        "client_id": CLIENT_ID,
+        "client_secret": CLIENT_SECRET,
+        "redirect_uri": REDIRECT_URI,
+        "grant_type": "authorization_code"
+    }
+
+    async with httpx.AsyncClient() as client:
+        token_res = await client.post(token_url, data=params)
+
+    if token_res.status_code != 200:
+        print(token_res.text)
+        raise HTTPException(status_code=400, detail="Token exchange failed")
+
+    tokens = token_res.json()
+
+    # Optionally save `tokens` somewhere (database, session, etc.)
+    # For now, just return them
+    return tokens
 
 @app.get("/authenticate")
 def auth():
