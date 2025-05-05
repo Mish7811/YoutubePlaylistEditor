@@ -1,6 +1,3 @@
-import { useEffect, useState } from "react";
-import { fetchPlaylist } from "@/lib/api";
-
 type PlaylistItem = {
   id: string;
   snippet: {
@@ -8,18 +5,11 @@ type PlaylistItem = {
   };
 };
 
-export default function Playlist() {
-  const [playlist, setPlaylist] = useState<PlaylistItem[]>([]); // ✅ Explicit type
+type PlaylistProps = {
+  playlist: PlaylistItem[];  // Expecting playlist prop to be an array of PlaylistItem
+};
 
-  useEffect(() => {
-    loadPlaylist();
-  }, []);
-
-  const loadPlaylist = async () => {
-    const items: PlaylistItem[] = await fetchPlaylist();
-    setPlaylist(items);
-  };
-
+const Playlist = ({ playlist }: PlaylistProps) => {
   return (
     <div>
       <h2 className="text-2xl mt-5" style={{ fontFamily: "var(--font-permanent-marker)" }}>
@@ -32,4 +22,6 @@ export default function Playlist() {
       </ul>
     </div>
   );
-}
+};
+
+export default Playlist;

@@ -2,19 +2,10 @@ import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-// Get ID token from localStorage (assuming Google Sign-In sets it there)
+// Helper function to get auth header from localStorage
 const getAuthHeader = () => {
   const idToken = localStorage.getItem("id_token"); // Ensure your login process sets this
   return idToken ? { Authorization: `Bearer ${idToken}` } : {};
-};
-
-// Helper function to handle error logging
-const handleError = (error: unknown, action: string) => {
-  if (error instanceof Error) {
-    console.error(`${action} - Error:`, error.message);
-  } else {
-    console.error(`${action} - Unknown error`, error);
-  }
 };
 
 // Fetch playlist
@@ -23,12 +14,10 @@ export const fetchPlaylist = async () => {
     const res = await axios.get(`${API_URL}/playlist`, {
       headers: getAuthHeader(),
     });
-    const authHead = getAuthHeader();
-    console.log('Authorization Header', authHead);
     return res.data.items; // Return playlist items from the response
   } catch (error) {
-    handleError(error, "Fetching playlist");
-    return [];
+    console.error("Error fetching playlist", error);
+    throw error;
   }
 };
 
@@ -37,24 +26,26 @@ export const addSong = async (songTitle: string) => {
   if (!songTitle) return; // Exit if no song title is provided
   try {
     await axios.post(
-      `${API_URL}/add_song?song_title=${encodeURIComponent(songTitle)}`, 
-      null, 
+      `${API_URL}/add_song?song_title=${encodeURIComponent(songTitle)}`,
+      null,
       {
         headers: getAuthHeader(),
       }
     );
   } catch (error) {
-    handleError(error, "Adding song");
+    console.error("Error adding song", error);
+    throw error;
   }
 };
 
-// Clear playlist (except first video)
+// Clear playlist
 export const clearPlaylist = async () => {
   try {
     await axios.delete(`${API_URL}/clear_playlist`, {
       headers: getAuthHeader(),
     });
   } catch (error) {
-    handleError(error, "Clearing playlist");
+    console.error("Error clearing playlist", error);
+    throw error;
   }
 };

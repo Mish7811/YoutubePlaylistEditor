@@ -6,23 +6,35 @@ import { Music4 } from "lucide-react";
 import Playlist from "@/components/Playlists";
 import AddSong from "@/components/AddSong";
 import ClearButton from "@/components/ClearButton";
+import { fetchPlaylist, addSong, clearPlaylist } from "@/lib/api";
 
 export default function Home() {
   const [key, setKey] = useState(0); // Key for forcing playlist refresh
-  const [gapiLoaded, setGapiLoaded] = useState(false); // To track if gapi is loaded
+  const [gapiLoaded, setGapiLoaded] = useState(false);
+  const [playlist, setPlaylist] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       import('@/lib/auth').then((auth) => {
         auth.initGoogleSignIn();
-        setGapiLoaded(true); // Mark gapi as loaded
+        setGapiLoaded(true);
       }).catch((error) => {
         console.error("Failed to load gapi", error);
       });
     }
   }, []);
 
-  const refreshPlaylist = () => {
+  const refreshPlaylist = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchPlaylist();
+      setPlaylist(data);
+    } catch (error) {
+      console.error("Error fetching playlist", error);
+    } finally {
+      setLoading(false);
+    }
     setKey((prev) => prev + 1);
   };
 
@@ -32,9 +44,19 @@ export default function Home() {
         const { signIn } = await import('@/lib/auth');
         await signIn();
         console.log("User signed in successfully");
+        refreshPlaylist();
       } catch (error) {
         console.error("Error during sign-in", error);
       }
+    }
+  };
+
+  const handleClearPlaylist = async () => {
+    try {
+      await clearPlaylist();
+      refreshPlaylist();
+    } catch (error) {
+      console.error("Error clearing playlist", error);
     }
   };
 
@@ -52,7 +74,6 @@ export default function Home() {
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {/* Google Sign-In Button */}
           <button
             onClick={handleSignIn}
             className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg mt-4"
@@ -60,15 +81,17 @@ export default function Home() {
             Sign in with Google
           </button>
 
-          {/* Add Song Section */}
           <div className="flex flex-col gap-4">
             <AddSong onAdd={refreshPlaylist} />
-            <ClearButton onClear={refreshPlaylist} />
+            <ClearButton onClear={handleClearPlaylist} />
           </div>
 
-          {/* Playlist Section */}
           <div className="border-t border-gray-800 pt-4">
-            <Playlist key={key} />
+            {loading ? (
+              <div className="text-center text-white">Loading Playlist...</div>
+            ) : (
+              <Playlist key={key} playlist={playlist} />
+            )}
           </div>
         </CardContent>
       </Card>
