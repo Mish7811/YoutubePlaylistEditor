@@ -5,6 +5,8 @@ import httpx
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import Security
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request as GoogleRequest
 from googleapiclient.discovery import build
@@ -14,6 +16,7 @@ load_dotenv()
 
 app = FastAPI()
 port = int(os.environ.get("PORT", 8000))
+bearer_scheme = HTTPBearer()
 
 # Load environment variables
 CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
@@ -64,12 +67,10 @@ def authenticate():
     return build("youtube", "v3", credentials=credentials)
 
 # Middleware: Verify Google ID token\
-async def verify_google_token(request: Request):
-    auth_header = request.headers.get("Authorization")
-    if not auth_header or not auth_header.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
-
-    token = auth_header.split(" ")[1]
+async def verify_google_token(
+    credentials: HTTPAuthorizationCredentials = Security(bearer_scheme)
+):
+    token = credentials.credentials
 
     async with httpx.AsyncClient() as client:
         response = await client.get(f"https://oauth2.googleapis.com/tokeninfo?id_token={token}")
@@ -78,6 +79,7 @@ async def verify_google_token(request: Request):
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
     return response.json()
+
 
 @app.get("/")
 def read_root():
