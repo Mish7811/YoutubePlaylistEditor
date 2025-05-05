@@ -14,10 +14,17 @@ export const initGoogleSignIn = () => {
 };
 
 export const signIn = async () => {
-  if (typeof window !== "undefined") { // Ensure it's running on the client
-    const auth2 = gapi.auth2.getAuthInstance();
-    const googleUser = await auth2.signIn();
-    const id_token = googleUser.getAuthResponse().id_token;
-    localStorage.setItem('id_token', id_token);
+  const auth2 = gapi.auth2.getAuthInstance();
+  if (auth2) {
+    try {
+      const user = await auth2.signIn();
+      console.log("User signed in:", user);
+      return user;
+    } catch (error) {
+      console.error("Error during Google Sign-In:", error);
+      throw error;
+    }
+  } else {
+    throw new Error("Google Sign-In is not initialized.");
   }
 };
