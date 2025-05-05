@@ -50,8 +50,13 @@ export default function Home() {
           // Optional: Provide feedback to the user
           alert("Sign-in popup was closed. Please try again.");
         }
-      } catch (error: any) {
-        if (error.error === "popup_closed_by_user") {
+      } catch (error: unknown) {
+        if (
+          typeof error === "object" &&
+          error !== null &&
+          "error" in error &&
+          (error as { error: string }).error === "popup_closed_by_user"
+        ) {
           console.log("The sign-in popup was closed by the user.");
           alert("Sign-in process was interrupted. Please try again.");
         } else {
