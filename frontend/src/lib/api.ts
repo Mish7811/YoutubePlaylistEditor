@@ -14,22 +14,28 @@ export const fetchPlaylist = async () => {
     const res = await axios.get(`${API_URL}/playlist`, {
       headers: getAuthHeader(),
     });
-    return res.data.items;
+    return res.data.items; // Return playlist items from the response
   } catch (error) {
-    console.error("Error fetching playlist:", error);
+    console.error("Error fetching playlist:", error.response ? error.response.data : error.message);
+    // Optionally, you can return an empty array or handle the error as per the app's needs
     return [];
   }
 };
 
 // Add song to playlist
 export const addSong = async (songTitle: string) => {
-  if (!songTitle) return;
+  if (!songTitle) return; // Exit if no song title is provided
   try {
-    await axios.post(`${API_URL}/add_song?song_title=${encodeURIComponent(songTitle)}`, null, {
-      headers: getAuthHeader(),
-    });
+    await axios.post(
+      `${API_URL}/add_song?song_title=${encodeURIComponent(songTitle)}`, 
+      null, 
+      {
+        headers: getAuthHeader(),
+      }
+    );
   } catch (error) {
-    console.error("Error adding song:", error);
+    console.error("Error adding song:", error.response ? error.response.data : error.message);
+    // Optionally, handle the error (e.g., show an alert or retry logic)
   }
 };
 
@@ -40,6 +46,7 @@ export const clearPlaylist = async () => {
       headers: getAuthHeader(),
     });
   } catch (error) {
-    console.error("Error clearing playlist:", error);
+    console.error("Error clearing playlist:", error.response ? error.response.data : error.message);
+    // Optionally, handle the error (e.g., show an alert or retry logic)
   }
 };
