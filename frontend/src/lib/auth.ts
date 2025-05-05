@@ -4,16 +4,20 @@ import { gapi } from 'gapi-script';
 const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!;
 
 export const initGoogleSignIn = () => {
-  gapi.load('auth2', () => {
-    gapi.auth2.init({
-      client_id: CLIENT_ID,
+  if (typeof window !== "undefined") { // Ensure it's running on the client
+    gapi.load('auth2', () => {
+      gapi.auth2.init({
+        client_id: CLIENT_ID,
+      });
     });
-  });
+  }
 };
 
 export const signIn = async () => {
-  const auth2 = gapi.auth2.getAuthInstance();
-  const googleUser = await auth2.signIn();
-  const id_token = googleUser.getAuthResponse().id_token;
-  localStorage.setItem('id_token', id_token);
+  if (typeof window !== "undefined") { // Ensure it's running on the client
+    const auth2 = gapi.auth2.getAuthInstance();
+    const googleUser = await auth2.signIn();
+    const id_token = googleUser.getAuthResponse().id_token;
+    localStorage.setItem('id_token', id_token);
+  }
 };
