@@ -8,6 +8,15 @@ const getAuthHeader = () => {
   return idToken ? { Authorization: `Bearer ${idToken}` } : {};
 };
 
+// Helper function to handle error logging
+const handleError = (error: unknown, action: string) => {
+  if (error instanceof Error) {
+    console.error(`${action} - Error:`, error.message);
+  } else {
+    console.error(`${action} - Unknown error`, error);
+  }
+};
+
 // Fetch playlist
 export const fetchPlaylist = async () => {
   try {
@@ -16,8 +25,7 @@ export const fetchPlaylist = async () => {
     });
     return res.data.items; // Return playlist items from the response
   } catch (error) {
-    console.error("Error fetching playlist:", error.response ? error.response.data : error.message);
-    // Optionally, you can return an empty array or handle the error as per the app's needs
+    handleError(error, "Fetching playlist");
     return [];
   }
 };
@@ -34,8 +42,7 @@ export const addSong = async (songTitle: string) => {
       }
     );
   } catch (error) {
-    console.error("Error adding song:", error.response ? error.response.data : error.message);
-    // Optionally, handle the error (e.g., show an alert or retry logic)
+    handleError(error, "Adding song");
   }
 };
 
@@ -46,7 +53,6 @@ export const clearPlaylist = async () => {
       headers: getAuthHeader(),
     });
   } catch (error) {
-    console.error("Error clearing playlist:", error.response ? error.response.data : error.message);
-    // Optionally, handle the error (e.g., show an alert or retry logic)
+    handleError(error, "Clearing playlist");
   }
 };
