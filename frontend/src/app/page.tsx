@@ -6,15 +6,19 @@ import { Music4 } from "lucide-react";
 import Playlist from "@/components/Playlists";
 import AddSong from "@/components/AddSong";
 import ClearButton from "@/components/ClearButton";
-import { initGoogleSignIn, signIn } from '@/lib/auth';
 
 export default function Home() {
   const [key, setKey] = useState(0); // Key for forcing playlist refresh
+  const [gapiLoaded, setGapiLoaded] = useState(false); // To track if gapi is loaded
 
   useEffect(() => {
-    // Ensure Google Sign-In is initialized only in the client side
     if (typeof window !== "undefined") {
-      initGoogleSignIn();
+      import('@/lib/auth').then((auth) => {
+        auth.initGoogleSignIn();
+        setGapiLoaded(true); // Mark gapi as loaded
+      }).catch((error) => {
+        console.error("Failed to load gapi", error);
+      });
     }
   }, []);
 
@@ -23,11 +27,14 @@ export default function Home() {
   };
 
   const handleSignIn = async () => {
-    try {
-      await signIn();
-      console.log("User signed in successfully");
-    } catch (error) {
-      console.error("Error during sign-in", error);
+    if (gapiLoaded) {
+      try {
+        const { signIn } = await import('@/lib/auth');
+        await signIn();
+        console.log("User signed in successfully");
+      } catch (error) {
+        console.error("Error during sign-in", error);
+      }
     }
   };
 
