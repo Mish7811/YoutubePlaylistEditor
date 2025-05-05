@@ -1,31 +1,26 @@
+// components/ui/SignInButton.tsx
 "use client";
 
-import { useEffect } from 'react';
-import { initGoogleSignIn, signIn } from '@/lib/auth';
+import { useEffect } from "react";
+import { initGoogleSignIn, signIn } from "@/lib/auth";
 
-const SignInButton = () => {
-  // Initialize Google Sign-In when the component mounts
+export const SignInButton = () => {
   useEffect(() => {
     initGoogleSignIn();
   }, []);
 
   const handleSignIn = async () => {
     try {
-      await signIn();
-      console.log('User signed in successfully');
+      const user = await signIn();
+      console.log("User:", user.getBasicProfile().getName());
     } catch (error) {
-      console.error('Error during sign-in', error);
+      console.error("Sign-in failed", error);
     }
   };
 
   return (
-    <button
-      onClick={handleSignIn}
-      className="px-4 py-2 bg-blue-500 text-white rounded-lg"
-    >
+    <button onClick={handleSignIn} className="px-4 py-2 bg-blue-500 text-white rounded">
       Sign in with Google
     </button>
   );
 };
-
-export default SignInButton;
