@@ -56,7 +56,8 @@ def authenticate():
 
     return build("youtube", "v3", credentials=credentials)
 
-# Middleware: Verify Google ID token\async def verify_google_token(request: Request):
+# Middleware: Verify Google ID token\
+async def verify_google_token(request: Request):
     auth_header = request.headers.get("Authorization")
     if not auth_header or not auth_header.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
