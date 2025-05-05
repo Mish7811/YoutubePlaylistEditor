@@ -23,6 +23,8 @@ export const fetchPlaylist = async () => {
     const res = await axios.get(`${API_URL}/playlist`, {
       headers: getAuthHeader(),
     });
+    const authHead = getAuthHeader();
+    console.log('Authorization Header', authHead);
     return res.data.items; // Return playlist items from the response
   } catch (error) {
     handleError(error, "Fetching playlist");
