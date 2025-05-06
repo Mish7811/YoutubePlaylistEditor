@@ -29,7 +29,7 @@ PLAYLIST_ID = os.getenv("GOOGLE_PLAYLIST_ID")
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://yt-playlist-song-adder.vercel.app/"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
