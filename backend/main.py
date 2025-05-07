@@ -26,6 +26,14 @@ REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
 SCOPES = os.getenv("GOOGLE_SCOPES", "https://www.googleapis.com/auth/youtube.force-ssl").split(",")
 PLAYLIST_ID = os.getenv("GOOGLE_PLAYLIST_ID")
 
+GOOGLE_AUTH_URL = (
+    "https://accounts.google.com/o/oauth2/v2/auth?"
+    f"response_type=code&client_id={CLIENT_ID}"
+    f"&redirect_uri={REDIRECT_URI}"
+    f"&scope=https://www.googleapis.com/auth/youtube.readonly"
+    f"&access_type=offline&prompt=consent"
+)
+
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
@@ -92,6 +100,10 @@ async def example():
     response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
     response.headers["Cross-Origin-Embedder-Policy"] = "require-corp"
     return response
+
+@app.get("/login")
+def login():
+    return RedirectResponse(GOOGLE_AUTH_URL)
 
 @app.get("/oauth2callback")
 async def oauth2callback(request: Request):
