@@ -37,7 +37,8 @@ GOOGLE_AUTH_URL = (
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://yt-playlist-song-adder.vercel.app",
+                   ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -152,6 +153,7 @@ async def get_playlist(user=Depends(verify_google_token)):
         playlistId=PLAYLIST_ID,
         maxResults=50
     )
+    print(request.headers)
     response = request.execute()
     return response
 

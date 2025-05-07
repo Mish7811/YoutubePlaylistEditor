@@ -11,6 +11,12 @@ const getAuthHeader = () => {
 // Fetch playlist
 export const fetchPlaylist = async () => {
   try {
+    const url = `${API_URL}/playlist`;
+    const headers = getAuthHeader();
+
+    console.log("Calling playlist API:", url);
+    console.log("Headers:", headers);
+    
     const res = await axios.get(`${API_URL}/playlist`, {
       headers: getAuthHeader(),
     });
