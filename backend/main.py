@@ -107,6 +107,7 @@ def login():
 
 @app.get("/oauth2callback")
 async def oauth2callback(request: Request):
+    print("FULL URL:", request.url)
     code = request.query_params.get("code")
     if not code:
         raise HTTPException(status_code=400, detail="No code in request")
